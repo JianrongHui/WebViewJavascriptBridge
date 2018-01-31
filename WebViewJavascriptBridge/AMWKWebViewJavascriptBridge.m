@@ -6,24 +6,24 @@
 //
 
 
-#import "WKWebViewJavascriptBridge.h"
+#import "AMWKWebViewJavascriptBridge.h"
 
-#if defined supportsWKWebView
+#if defined AM_SupportsWKWebView
 
-@implementation WKWebViewJavascriptBridge {
+@implementation AMWKWebViewJavascriptBridge {
     __weak WKWebView* _webView;
     __weak id<WKNavigationDelegate> _webViewDelegate;
     long _uniqueId;
-    WebViewJavascriptBridgeBase *_base;
+    AMWebViewJavascriptBridgeBase *_base;
 }
 
 /* API
  *****/
 
-+ (void)enableLogging { [WebViewJavascriptBridgeBase enableLogging]; }
++ (void)enableLogging { [AMWebViewJavascriptBridgeBase enableLogging]; }
 
 + (instancetype)bridgeForWebView:(WKWebView*)webView {
-    WKWebViewJavascriptBridge* bridge = [[self alloc] init];
+    AMWKWebViewJavascriptBridge* bridge = [[self alloc] init];
     [bridge _setupInstance:webView];
     [bridge reset];
     return bridge;
@@ -33,7 +33,7 @@
     [self send:data responseCallback:nil];
 }
 
-- (void)send:(id)data responseCallback:(WVJBResponseCallback)responseCallback {
+- (void)send:(id)data responseCallback:(AMWVJBResponseCallback)responseCallback {
     [_base sendData:data responseCallback:responseCallback handlerName:nil];
 }
 
@@ -45,11 +45,11 @@
     [self callHandler:handlerName data:data responseCallback:nil];
 }
 
-- (void)callHandler:(NSString *)handlerName data:(id)data responseCallback:(WVJBResponseCallback)responseCallback {
+- (void)callHandler:(NSString *)handlerName data:(id)data responseCallback:(AMWVJBResponseCallback)responseCallback {
     [_base sendData:data responseCallback:responseCallback handlerName:handlerName];
 }
 
-- (void)registerHandler:(NSString *)handlerName handler:(WVJBHandler)handler {
+- (void)registerHandler:(NSString *)handlerName handler:(AMWVJBHandler)handler {
     _base.messageHandlers[handlerName] = [handler copy];
 }
 
@@ -86,7 +86,7 @@
 - (void) _setupInstance:(WKWebView*)webView {
     _webView = webView;
     _webView.navigationDelegate = self;
-    _base = [[WebViewJavascriptBridgeBase alloc] init];
+    _base = [[AMWebViewJavascriptBridgeBase alloc] init];
     _base.delegate = self;
 }
 

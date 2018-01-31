@@ -7,10 +7,10 @@
 //
 
 #import "ExampleUIWebViewController.h"
-#import "WebViewJavascriptBridge.h"
+#import "AMWebViewJavascriptBridge.h"
 
 @interface ExampleUIWebViewController ()
-@property WebViewJavascriptBridge* bridge;
+@property AMWebViewJavascriptBridge* bridge;
 @end
 
 @implementation ExampleUIWebViewController
@@ -23,12 +23,12 @@
     UIWebView* webView = [[UIWebView alloc] initWithFrame:self.view.bounds];
     [self.view addSubview:webView];
     
-    [WebViewJavascriptBridge enableLogging];
+    [AMWebViewJavascriptBridge enableLogging];
     
-    _bridge = [WebViewJavascriptBridge bridgeForWebView:webView];
+    _bridge = [AMWebViewJavascriptBridge bridgeForWebView:webView];
     [_bridge setWebViewDelegate:self];
     
-    [_bridge registerHandler:@"testObjcCallback" handler:^(id data, WVJBResponseCallback responseCallback) {
+    [_bridge registerHandler:@"testObjcCallback" handler:^(id data, AMWVJBResponseCallback responseCallback) {
         NSLog(@"testObjcCallback called: %@", data);
         responseCallback(@"Response from testObjcCallback");
     }];

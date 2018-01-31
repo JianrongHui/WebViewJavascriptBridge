@@ -6,46 +6,46 @@
 //  Copyright (c) 2013 Marcus Westin. All rights reserved.
 //
 
-#import "WebViewJavascriptBridge.h"
+#import "AMWebViewJavascriptBridge.h"
 
-#if defined(supportsWKWebView)
-#import "WKWebViewJavascriptBridge.h"
+#if defined(AM_SupportsWKWebView)
+#import "AMWKWebViewJavascriptBridge.h"
 #endif
 
 #if __has_feature(objc_arc_weak)
-    #define WVJB_WEAK __weak
+    #define AM_WVJB_WEAK __weak
 #else
-    #define WVJB_WEAK __unsafe_unretained
+    #define AM_WVJB_WEAK __unsafe_unretained
 #endif
 
-@implementation WebViewJavascriptBridge {
-    WVJB_WEAK WVJB_WEBVIEW_TYPE* _webView;
-    WVJB_WEAK id _webViewDelegate;
+@implementation AMWebViewJavascriptBridge {
+    AM_WVJB_WEAK AM_WVJB_WEBVIEW_TYPE* _webView;
+    AM_WVJB_WEAK id _webViewDelegate;
     long _uniqueId;
-    WebViewJavascriptBridgeBase *_base;
+    AMWebViewJavascriptBridgeBase *_base;
 }
 
 /* API
  *****/
 
 + (void)enableLogging {
-    [WebViewJavascriptBridgeBase enableLogging];
+    [AMWebViewJavascriptBridgeBase enableLogging];
 }
 + (void)setLogMaxLength:(int)length {
-    [WebViewJavascriptBridgeBase setLogMaxLength:length];
+    [AMWebViewJavascriptBridgeBase setLogMaxLength:length];
 }
 
 + (instancetype)bridgeForWebView:(id)webView {
     return [self bridge:webView];
 }
 + (instancetype)bridge:(id)webView {
-#if defined supportsWKWebView
+#if defined AM_SupportsWKWebView
     if ([webView isKindOfClass:[WKWebView class]]) {
-        return (WebViewJavascriptBridge*) [WKWebViewJavascriptBridge bridgeForWebView:webView];
+        return (AMWebViewJavascriptBridge*) [AMWKWebViewJavascriptBridge bridgeForWebView:webView];
     }
 #endif
-    if ([webView isKindOfClass:[WVJB_WEBVIEW_TYPE class]]) {
-        WebViewJavascriptBridge* bridge = [[self alloc] init];
+    if ([webView isKindOfClass:[AM_WVJB_WEBVIEW_TYPE class]]) {
+        AMWebViewJavascriptBridge* bridge = [[self alloc] init];
         [bridge _platformSpecificSetup:webView];
         return bridge;
     }
@@ -53,7 +53,7 @@
     return nil;
 }
 
-- (void)setWebViewDelegate:(WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate {
+- (void)setWebViewDelegate:(AM_WVJB_WEBVIEW_DELEGATE_TYPE*)webViewDelegate {
     _webViewDelegate = webViewDelegate;
 }
 
@@ -61,7 +61,7 @@
     [self send:data responseCallback:nil];
 }
 
-- (void)send:(id)data responseCallback:(WVJBResponseCallback)responseCallback {
+- (void)send:(id)data responseCallback:(AMWVJBResponseCallback)responseCallback {
     [_base sendData:data responseCallback:responseCallback handlerName:nil];
 }
 
@@ -73,11 +73,11 @@
     [self callHandler:handlerName data:data responseCallback:nil];
 }
 
-- (void)callHandler:(NSString *)handlerName data:(id)data responseCallback:(WVJBResponseCallback)responseCallback {
+- (void)callHandler:(NSString *)handlerName data:(id)data responseCallback:(AMWVJBResponseCallback)responseCallback {
     [_base sendData:data responseCallback:responseCallback handlerName:handlerName];
 }
 
-- (void)registerHandler:(NSString *)handlerName handler:(WVJBHandler)handler {
+- (void)registerHandler:(NSString *)handlerName handler:(AMWVJBHandler)handler {
     _base.messageHandlers[handlerName] = [handler copy];
 }
 
@@ -104,11 +104,11 @@
     return [_webView stringByEvaluatingJavaScriptFromString:javascriptCommand];
 }
 
-#if defined WVJB_PLATFORM_OSX
+#if defined AM_WVJB_PLATFORM_OSX
 /* Platform specific internals: OSX
  **********************************/
 
-- (void) _platformSpecificSetup:(WVJB_WEBVIEW_TYPE*)webView {
+- (void) _platformSpecificSetup:(AM_WVJB_WEBVIEW_TYPE*)webView {
     _webView = webView;
     _webView.policyDelegate = self;
     _base = [[WebViewJavascriptBridgeBase alloc] init];
@@ -142,14 +142,14 @@
 
 
 
-#elif defined WVJB_PLATFORM_IOS
+#elif defined AM_WVJB_PLATFORM_IOS
 /* Platform specific internals: iOS
  **********************************/
 
-- (void) _platformSpecificSetup:(WVJB_WEBVIEW_TYPE*)webView {
+- (void) _platformSpecificSetup:(AM_WVJB_WEBVIEW_TYPE*)webView {
     _webView = webView;
     _webView.delegate = self;
-    _base = [[WebViewJavascriptBridgeBase alloc] init];
+    _base = [[AMWebViewJavascriptBridgeBase alloc] init];
     _base.delegate = self;
 }
 
@@ -160,7 +160,7 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView {
     if (webView != _webView) { return; }
     
-    __strong WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
+    __strong AM_WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
     if (strongDelegate && [strongDelegate respondsToSelector:@selector(webViewDidFinishLoad:)]) {
         [strongDelegate webViewDidFinishLoad:webView];
     }
@@ -169,7 +169,7 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
     if (webView != _webView) { return; }
     
-    __strong WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
+    __strong AM_WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
     if (strongDelegate && [strongDelegate respondsToSelector:@selector(webView:didFailLoadWithError:)]) {
         [strongDelegate webView:webView didFailLoadWithError:error];
     }
@@ -179,7 +179,7 @@
     if (webView != _webView) { return YES; }
     
     NSURL *url = [request URL];
-    __strong WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
+    __strong AM_WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
     if ([_base isWebViewJavascriptBridgeURL:url]) {
         if ([_base isBridgeLoadedURL:url]) {
             [_base injectJavascriptFile];
@@ -200,7 +200,7 @@
 - (void)webViewDidStartLoad:(UIWebView *)webView {
     if (webView != _webView) { return; }
     
-    __strong WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
+    __strong AM_WVJB_WEBVIEW_DELEGATE_TYPE* strongDelegate = _webViewDelegate;
     if (strongDelegate && [strongDelegate respondsToSelector:@selector(webViewDidStartLoad:)]) {
         [strongDelegate webViewDidStartLoad:webView];
     }

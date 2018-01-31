@@ -6,10 +6,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WebViewJavascriptBridgeBase.h"
-#import "WebViewJavascriptBridge_JS.h"
+#import "AMWebViewJavascriptBridgeBase.h"
+#import "AMWebViewJavascriptBridge_JS.h"
 
-@implementation WebViewJavascriptBridgeBase {
+@implementation AMWebViewJavascriptBridgeBase {
     __weak id _webViewDelegate;
     long _uniqueId;
 }
@@ -42,7 +42,7 @@ static int logMaxLength = 500;
     _uniqueId = 0;
 }
 
-- (void)sendData:(id)data responseCallback:(WVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName {
+- (void)sendData:(id)data responseCallback:(AMWVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName {
     NSMutableDictionary* message = [NSMutableDictionary dictionary];
     
     if (data) {
@@ -68,8 +68,8 @@ static int logMaxLength = 500;
     }
 
     id messages = [self _deserializeMessageJSON:messageQueueString];
-    for (WVJBMessage* message in messages) {
-        if (![message isKindOfClass:[WVJBMessage class]]) {
+    for (AMWVJBMessage* message in messages) {
+        if (![message isKindOfClass:[AMWVJBMessage class]]) {
             NSLog(@"WebViewJavascriptBridge: WARNING: Invalid %@ received: %@", [message class], message);
             continue;
         }
@@ -77,11 +77,11 @@ static int logMaxLength = 500;
         
         NSString* responseId = message[@"responseId"];
         if (responseId) {
-            WVJBResponseCallback responseCallback = _responseCallbacks[responseId];
+            AMWVJBResponseCallback responseCallback = _responseCallbacks[responseId];
             responseCallback(message[@"responseData"]);
             [self.responseCallbacks removeObjectForKey:responseId];
         } else {
-            WVJBResponseCallback responseCallback = NULL;
+            AMWVJBResponseCallback responseCallback = NULL;
             NSString* callbackId = message[@"callbackId"];
             if (callbackId) {
                 responseCallback = ^(id responseData) {
@@ -89,7 +89,7 @@ static int logMaxLength = 500;
                         responseData = [NSNull null];
                     }
                     
-                    WVJBMessage* msg = @{ @"responseId":callbackId, @"responseData":responseData };
+                    AMWVJBMessage* msg = @{ @"responseId":callbackId, @"responseData":responseData };
                     [self _queueMessage:msg];
                 };
             } else {
@@ -98,7 +98,7 @@ static int logMaxLength = 500;
                 };
             }
             
-            WVJBHandler handler = self.messageHandlers[message[@"handlerName"]];
+            AMWVJBHandler handler = self.messageHandlers[message[@"handlerName"]];
             
             if (!handler) {
                 NSLog(@"WVJBNoHandlerException, No handler for message from JS: %@", message);
@@ -111,7 +111,7 @@ static int logMaxLength = 500;
 }
 
 - (void)injectJavascriptFile {
-    NSString *js = WebViewJavascriptBridge_js();
+    NSString *js = AMWebViewJavascriptBridge_js();
     [self _evaluateJavascript:js];
     if (self.startupMessageQueue) {
         NSArray* queue = self.startupMessageQueue;
@@ -131,17 +131,17 @@ static int logMaxLength = 500;
 
 - (BOOL)isSchemeMatch:(NSURL*)url {
     NSString* scheme = url.scheme.lowercaseString;
-    return [scheme isEqualToString:kNewProtocolScheme] || [scheme isEqualToString:kOldProtocolScheme];
+    return [scheme isEqualToString:kAMNewProtocolScheme] || [scheme isEqualToString:kAMOldProtocolScheme];
 }
 
 - (BOOL)isQueueMessageURL:(NSURL*)url {
     NSString* host = url.host.lowercaseString;
-    return [self isSchemeMatch:url] && [host isEqualToString:kQueueHasMessage];
+    return [self isSchemeMatch:url] && [host isEqualToString:kAMQueueHasMessage];
 }
 
 - (BOOL)isBridgeLoadedURL:(NSURL*)url {
     NSString* host = url.host.lowercaseString;
-    return [self isSchemeMatch:url] && [host isEqualToString:kBridgeLoaded];
+    return [self isSchemeMatch:url] && [host isEqualToString:kAMBridgeLoaded];
 }
 
 - (void)logUnkownMessage:(NSURL*)url {
@@ -167,7 +167,7 @@ static int logMaxLength = 500;
     [self.delegate _evaluateJavascript:javascriptCommand];
 }
 
-- (void)_queueMessage:(WVJBMessage*)message {
+- (void)_queueMessage:(AMWVJBMessage*)message {
     if (self.startupMessageQueue) {
         [self.startupMessageQueue addObject:message];
     } else {
@@ -175,7 +175,7 @@ static int logMaxLength = 500;
     }
 }
 
-- (void)_dispatchMessage:(WVJBMessage*)message {
+- (void)_dispatchMessage:(AMWVJBMessage*)message {
     NSString *messageJSON = [self _serializeMessage:message pretty:NO];
     [self _log:@"SEND" json:messageJSON];
     messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];

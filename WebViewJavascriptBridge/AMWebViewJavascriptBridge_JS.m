@@ -8,9 +8,9 @@
 // library to include the resource, violating their encapsulation. By including the
 // Javascript as a string resource, the encapsulation of the library is maintained.
 
-#import "WebViewJavascriptBridge_JS.h"
+#import "AMWebViewJavascriptBridge_JS.h"
 
-NSString * WebViewJavascriptBridge_js() {
+NSString * AMWebViewJavascriptBridge_js() {
 	#define __wvjb_js_func__(x) #x
 	
 	// BEGIN preprocessorJSCode
