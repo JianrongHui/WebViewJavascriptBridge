@@ -18,6 +18,8 @@
 - (void)viewWillAppear:(BOOL)animated {
     if (_bridge) { return; }
     
+    
+    
     UIWebView* webView = [[UIWebView alloc] initWithFrame:self.view.bounds];
     [self.view addSubview:webView];
     
